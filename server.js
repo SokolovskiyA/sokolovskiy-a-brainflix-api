@@ -5,7 +5,6 @@ const fs = require ('fs-extra');
 const {v4: uuid} = require('uuid');
 const cors = require("cors");
 
-
 app.use(cors());
 app.use(express.static('public'));
 app.use(express.json());
@@ -28,7 +27,13 @@ function deleteComment(videoId, commentId) {
     video.comments.splice(commentIndex, 1)
     fs.writeFile('./data/video-details.json', JSON.stringify(videos))
 }
-
+function addComment(videoId, newComment) {
+    const videos = loadVideos()
+    const video = videos.find(video => video.id === videoId);
+    video.comments.push(newComment)
+    fs.writeFile('./data/video-details.json', JSON.stringify(videos))
+    return(video.comments)
+}
 
 
 
@@ -36,9 +41,7 @@ function deleteComment(videoId, commentId) {
 app.get('/', (req, res) => {
     res.status(200).send("Hello. And  welcome  to  BrainFlix  API. ")
 });
-
-
-////getting video list (**** WORKS ****)
+////getting video list ****WORKS****
 app.get('/videos', (req, res) => {
     fs.readFile(`./data/video-details.json`, (err, videos)=>{
         if (err) {
@@ -49,6 +52,7 @@ app.get('/videos', (req, res) => {
         }
     })
 });
+////Posting new video ****WORKS****
 app.post('/videos', (req,res) => {
     if (req.body.title && req.body.description) {
         let newVideo = {
@@ -66,9 +70,7 @@ app.post('/videos', (req,res) => {
         res.status(400).send('Please provide video title and video description');
     }
 })
-
-/////getting video by id  (**** WORKS ****)
-
+/////getting video by id  *** WORKS ***
 app.get('/videos/:videoId', (req, res) => {
     fs.readFile(`./data/video-details.json`, (err, videosInfo)=>{
         if (err) {
@@ -80,38 +82,31 @@ app.get('/videos/:videoId', (req, res) => {
         }
     });
 });
-
-/*
+///POSTIN COMMENTS ***WORKS***
 app.post('/videos/:videoId/comments', (req, res) => {
-    if( req.params.videoId && req.body.comment && req.body.name) {
+    if(req.params.videoId && req.body.comment && req.body.name) {
         let newComment = {
             name: req.body.name, 
-            comment: req.body.commment, 
+            comment: req.body.comment, 
             timestamp: Date.now(),
             likes: 0, 
             id: uuid(),
         }
-        addComment(req.params.videoId)
+        res.status(201).send(addComment(req.params.videoId, newComment))
     }
     else {
         res.send('Please provide comment');
     }
 })
-*/
 ////DELETE COMMENT *** WORKS *** 
-
 app.delete('/videos/:videoId/comments/:commentId', (req, res) => {
-
     if (req.params.videoId && req.params.commentId) {
         res.status(201).send(deleteComment(req.params.videoId, req.params.commentId))
     }
     else {
         res.status(404).send("comment not found");
     }
-
 });
-
-
 
 app.listen(port, () => {
     console.log(`App listening on port ${port}`)
