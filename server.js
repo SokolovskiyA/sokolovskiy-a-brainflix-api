@@ -19,7 +19,6 @@ const storage = multer.diskStorage ({
     }
 })
 const upload = multer({ storage: storage }) ///SET STORAGE 
-
 ///FUNCTIONS////
 function loadVideos() {
     const videos = fs.readFileSync('./data/video-details.json', 'utf8');
@@ -45,20 +44,9 @@ function addComment(videoId, newComment) {
     fs.writeFile('./data/video-details.json', JSON.stringify(videos))
     return(video.comments)
 }
-
-/*
-function addLike (videoId, commentId) {
-    const videos = loadVideos()
-    const video = videos.find(video => video.id === videoId);
-    const comment = video.comments.find(comment => comment.id === commentId)
-    return(video.comments)
-}
-*/
-
 app.get('/', (req, res) => {
     res.status(200).send("Hello. And  welcome  to  BrainFlix  API. ")
 });
-
 ////getting video list ****WORKS****
 app.get('/videos', (req, res) => {
     fs.readFile(`./data/video-details.json`, (err, videos)=>{
@@ -90,7 +78,6 @@ app.post('/videos', upload.single('image') , (req,res) => {
         res.status(400).send('Please provide video title and video description');
     }
 })
-
 /////getting video by id  *** WORKS ***
 app.get('/videos/:videoId', (req, res) => {
     fs.readFile(`./data/video-details.json`, (err, videosInfo)=>{
@@ -128,11 +115,12 @@ app.delete('/videos/:videoId/comments/:commentId', (req, res) => {
         res.status(404).send("comment not found");
     }
 });
+/*
+app.put('/videos/:videoId/comments/:commentId', (req, res) => {
+    console.log(req.body)
+});
+*/
 
-
-/*app.put('/videos/:videoId/comments/:commentId', (req, res) => {
-    res.send(addLike(req.params.videoId, req.params.commentId))
-});*/
 
 app.listen(port, () => {
     console.log(`App listening on port ${port}`)
